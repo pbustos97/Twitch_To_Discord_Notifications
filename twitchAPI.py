@@ -93,30 +93,38 @@ class miniTwitchBot():
             print(followed['to_id'] + ': ' + followed['to_name'])
 
     # Creates an EventSub endpoint for webhook notifications
-    def setEventSubSub(self, followedId):
+    def setEventSub(self, followedId):
         self.twitch_eventsub_data['condition']['broadcaster_user_id'] = str(followedId)
         r = requests.post(self.twitch_api_base_url + self.twitch_helix + self.twitch_eventsub + 'subscriptions/', json=self.twitch_eventsub_data, headers=self.twitch_wrapper.twitch_auth_headers)
-        if self.twitch_wrapper.checkAccessToken(r, 'setEventSubSub') == False:
+        if self.twitch_wrapper.checkAccessToken(r, 'setEventSub') == False:
             r = requests.post(self.twitch_api_base_url + self.twitch_helix + self.twitch_eventsub + 'subscriptions/', json=self.twitch_eventsub_data, headers=self.twitch_wrapper.twitch_auth_headers)
         response = json.loads(r.text)
-        print('setEventSubSub: ' + r.text)
+        print('setEventSub: ' + r.text)
 
     # Deletes an EventSub subscription
-    def deleteEventSubSub(self, subscriptionId):
+    def deleteEventSub(self, subscriptionId):
         r = requests.delete(self.twitch_api_base_url + self.twitch_helix + self.twitch_eventsub + 'subscriptions', data={'id':str(subscriptionId)}, headers=self.twitch_wrapper.twitch_auth_headers)
-        if self.twitch_wrapper.checkAccessToken(r, 'deleteEventSubSub') == False:
+        if self.twitch_wrapper.checkAccessToken(r, 'deleteEventSub') == False:
             r = requests.delete(self.twitch_api_base_url + self.twitch_helix + self.twitch_eventsub + 'subscriptions', data={'id':str(subscriptionId)}, headers=self.twitch_wrapper.twitch_auth_headers)
-        print('deleteEventSubSub: Deleted event notifications for ' + subscriptionId)
+        print('deleteEventSub: Deleted event notifications for ' + subscriptionId)
 
     # Gets EventSub subscriptions
-    def getEventSubSub(self):
-        r = requests.get(self.twitch_api_base_url + self.twitch_helix + self.twitch_eventsub + 'subscriptions', headers=self.twitch_wrapper.twitch_auth_headers)
-        if self.twitch_wrapper.checkAccessToken(r, 'deleteEventSubSub') == False:
-            r = request.get(self.twitch_api_base_url + self.twitch_helix + self.twitch_eventsub + 'subscriptions', headers=self.twitch_wrapper.twitch_auth_headers)
-        response = json.loads(r.text)
-        print('getEventSubSub: ' + r.text)
+    def getEventSub(self):
+        response = self.getEventSubHelper('getEventSub')
+        print('getEventSub: ' + r.text)
 
         # Deletes all webhooks that have failed callback verification or have revoked authorization
         for subscription in response['data']:
             if subscription['status'] == 'webhook_callback_verification_failed' or subscription['status'] == 'authorization_revoked':
-                self.deleteEventSubSub(subscription['id'])
+                self.deleteEventSub(subscription['id'])
+    
+    def getEventSubHelper(self, methodName):
+        r = requests.get(self.twitch_api_base_url + self.twitch_helix + self.twitch_eventsub + 'subscriptions', headers=self.twitch_wrapper.twitch_auth_headers)
+        if self.twitch_wrapper.checkAccessToken(r, methodName) == False:
+            r = request.get(self.twitch_api_base_url + self.twitch_helix + self.twitch_eventsub + 'subscriptions', headers=self.twitch_wrapper.twitch_auth_headers)
+        return json.loads(r.text)
+
+    def deleteAllEventSub(self):
+        response = self.getEventSubHelper('deleteAllEventSub')
+        for subscription in response['data']:
+            self.deleteEventSub(subscription['id'])
