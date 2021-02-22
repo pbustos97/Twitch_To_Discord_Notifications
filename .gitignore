@@ -124,6 +124,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Client ID's and Client Secrets
+app/secret
 
-twitch_id.py
-twitch_tester.py
+# Testing script
+app/twitch_tester.py

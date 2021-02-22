@@ -1,6 +1,7 @@
 import json
 import requests
-from twitch_id import twitch_id, twitch_secret, http_secret, http_callback
+from secret.http_urls import http_secret, http_callback, http_base, http_api
+from secret.twitch_id import twitch_id, twitch_secret
 
 # Class for authentication
 class miniTwitchWrapper():
@@ -17,8 +18,6 @@ class miniTwitchWrapper():
         self.twitch_oauth2_url = self.twitch_auth_base_url + 'oauth2/token'
         self.twitch_access_token = ''
         self.twitch_access_token_type = ''
-
-        
 
     # Sets access token for the wrapper
     def setAccessToken(self):
@@ -61,7 +60,7 @@ class miniTwitchBot():
                                     'version': '1', 
                                     'condition': {'broadcaster_user_id': ''}, 
                                     'transport': {'method': 'webhook', 
-                                                  'callback': http_callback, 
+                                                  'callback': http_base + http_api + http_callback, 
                                                   'secret': http_secret}}
 
         self.twitch_hub = 'hub/'
@@ -93,8 +92,8 @@ class miniTwitchBot():
             print(followed['to_id'] + ': ' + followed['to_name'])
 
     # Creates an EventSub endpoint for webhook notifications
-    def setEventSub(self, followedId):
-        self.twitch_eventsub_data['condition']['broadcaster_user_id'] = str(followedId)
+    def setEventSub(self, userId):
+        self.twitch_eventsub_data['condition']['broadcaster_user_id'] = str(userId)
         r = requests.post(self.twitch_api_base_url + self.twitch_helix + self.twitch_eventsub + 'subscriptions/', json=self.twitch_eventsub_data, headers=self.twitch_wrapper.twitch_auth_headers)
         if self.twitch_wrapper.checkAccessToken(r, 'setEventSub') == False:
             r = requests.post(self.twitch_api_base_url + self.twitch_helix + self.twitch_eventsub + 'subscriptions/', json=self.twitch_eventsub_data, headers=self.twitch_wrapper.twitch_auth_headers)
@@ -111,7 +110,7 @@ class miniTwitchBot():
     # Gets EventSub subscriptions
     def getEventSub(self):
         response = self.getEventSubHelper('getEventSub')
-        print('getEventSub: ' + r.text)
+        print('getEventSub: ' + str(response))
 
         # Deletes all webhooks that have failed callback verification or have revoked authorization
         for subscription in response['data']:
