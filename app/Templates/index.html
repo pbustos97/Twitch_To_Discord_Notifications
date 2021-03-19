@@ -1,2 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+{% if not user %}
 <h1>Login with Discord</h1>
-<a href="https://discord.com/api/oauth2/authorize?client_id=801270142126260284&redirect_uri=https%3A%2F%2F5a2e80404063.ngrok.io%2Fapi%2Fdiscord%2Fredirect&response_type=code&scope=identify%20email%20guilds">Login</a>
+<a href="https://discord.com/api/oauth2/authorize?client_id=801270142126260284&permissions=0&redirect_uri=https%3A%2F%2F8c792ccc710f.ngrok.io%2Fapi%2Fdiscord%2Fredirect&response_type=code&scope=identify%20email%20guilds%20bot">Login</a>
+{% endif %}
+{% endblock %}

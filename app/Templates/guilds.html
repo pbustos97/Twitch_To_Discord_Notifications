@@ -1,4 +1,7 @@
+{% extends "base.html" %}
 <!-- Should list a list of guilds the user is in -->
+{% block content %}
 {% for guild in guilds %}
 <div><p>{{ guild.name }}: {{guild.id}}</p></div>
 {% endfor %}
+{% endblock %}

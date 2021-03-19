@@ -1,21 +1,21 @@
 import requests
 import json
-import hmac
-import hashlib
+import asyncio
 from flask import Flask, request, abort, render_template, session, url_for, redirect
 from flask_sslify import SSLify
-from secret.http_urls import http_secret_bytes, http_callback, http_base, http_login, http_api, http_discord, http_redirect
-from secret.discord_id import discord_webhook_url, discord_token_url, discord_revoke_url, discord_redirect_url, discord_guilds_url, discord_id, discord_secret
-from routes_controller import Callback_Verify, Discord_Login_Controller, Discord_Logout_Controller
-from secret import secret_key
+from app import app, db
+from app.secret.discord_id import discord_webhook_url, discord_redirect_url, discord_guilds_url, discord_id
+from app.routes_controller import Callback_Verify, Discord_Login_Controller, Discord_Logout_Controller
+from app.secret import secret_key
+from app.discord_async import Discord_Async
+from app.models import Channel, Guild, User, Webhook, Notification
 
-app = Flask(__name__)
-sslify = SSLify(app)
-app.config['SECRET_KEY'] = secret_key
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-twitch_url = 'https://api.twitch.tv/helix/eventsub/subscriptions'
+bot = Discord_Async(loop=asyncio.new_event_loop(),db=db)
+bot.start()
 
-# Website index for Signing in to add bot to server
 @app.route('/', methods=['POST', 'GET'])
 def index():
     if 'user' in session:
@@ -24,16 +24,15 @@ def index():
                    'Authorization': header_auth,
                    'Scope': session['user']['scope']}
         r = requests.get('https://discord.com/api/users/@me', headers=headers)
-        print(r)
-        #print(r.data)
     return render_template('index.html')
 
+# Website index for Signing in to add bot to server
 @app.route('/login')
 def login():
     return redirect(discord_redirect_url)
 
 # Sign in with Discord to login
-@app.route('/api/discord/redirect', methods=['POST', 'GET'])
+@app.route('/api/discord/redirect', methods=['POST','GET'])
 def discord_login():
     Discord_Login_Controller(request)
     print(session['user'])
@@ -56,20 +55,25 @@ def logout():
 def guilds():
     if 'user' not in session:
         return 'You need to be logged in to see your guilds', 400
-
+    
     headers = {'Authorization': session['user']['token_type'] + ' ' + session['user']['access_token']}
     r = requests.get(discord_guilds_url, headers=headers)
     guilds = json.loads(r.text)
+    for guild in guilds:
+        bot.discordBot.addGuildToTable(guild['id'], guild['name'])
     return render_template('guilds.html', guilds=guilds)
 
 # Should only be called when user is logged in
 @app.route('/guilds/<id>')
-def channels():
+def channels(id):
     if 'user' not in session:
         return 'You need to be logged in to see the guild channels', 400
     
     headers = {'Authorization': session['user']['token_type'] + ' ' + session['user']['access_token']}
-    channels = []
+
+    asyncio.run(bot.discordBot.get_channels(guildId=id))
+
+    channels = Channel.query.filter_by(guildId=id)
     return render_template('channels.html', channels=channels)
 
 # Receives the Twitch Challenge and sends recieved data to discord webhook
@@ -104,6 +108,3 @@ def callback():
         return 'Ok', 200
     else:
         abort(400)
-
-if __name__ == '__main__':
-    app.run(port=80)

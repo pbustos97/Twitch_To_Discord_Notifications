@@ -1,4 +1,8 @@
+{% extends "base.html" %}
+
 <!-- Should list a list of channels inside a guild -->
+{% block content %}
 {% for channel in channels %}
 <div><p>{{channel.name}}: {{channel.id}}</p></div>
 {% endfor %}
+{% endblock %}

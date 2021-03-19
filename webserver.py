@@ -1,4 +1,1 @@
-from app import create_app, cli
-
-app = create_app()
-
+from app import app

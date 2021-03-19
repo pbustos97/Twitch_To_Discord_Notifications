@@ -4,9 +4,10 @@ import hmac
 import hashlib
 import base64
 from flask import Flask, request, session
-from secret.discord_id import discord_id, discord_secret, discord_token_url, discord_revoke_url
-from secret.http_urls import http_base, http_api, http_discord, http_redirect, http_secret_bytes
+from app.secret.discord_id import discord_id, discord_secret, discord_token_url, discord_revoke_url
+from app.secret.http_urls import http_base, http_api, http_discord, http_redirect, http_secret_bytes
 
+# Used to verify callback requests from twitch
 def Callback_Verify(request):
     msgId = bytes(request.headers['Twitch-Eventsub-Message-Id'], request.charset)
     msgTimestamp = bytes(request.headers['Twitch-Eventsub-Message-Timestamp'], request.charset)
