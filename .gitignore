@@ -130,8 +130,5 @@ app/secret
 # Testing script
 app/twitch_tester.py
 
-# Config file
-config.py
-
 # Databases
 *.db

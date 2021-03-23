@@ -1,8 +1,8 @@
-"""user, guild, channel, webhook, notification tables
+"""initial db
 
-Revision ID: 27db9f7eb85a
+Revision ID: 8437276ea563
 Revises: 
-Create Date: 2021-03-18 16:43:20.536997
+Create Date: 2021-03-23 14:18:51.881673
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '27db9f7eb85a'
+revision = '8437276ea563'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -40,8 +40,7 @@ def upgrade():
     sa.Column('guildId', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['guildId'], ['guild.guildId'], ),
     sa.PrimaryKeyConstraint('channelId'),
-    sa.UniqueConstraint('channelId'),
-    sa.UniqueConstraint('guildId')
+    sa.UniqueConstraint('channelId')
     )
     op.create_table('guildUsers',
     sa.Column('guildId', sa.Integer(), nullable=True),
@@ -52,10 +51,11 @@ def upgrade():
     op.create_table('webhook',
     sa.Column('webhookId', sa.Integer(), nullable=False),
     sa.Column('channelId', sa.Integer(), nullable=True),
+    sa.Column('webhookURL', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['channelId'], ['channel.channelId'], ),
     sa.PrimaryKeyConstraint('webhookId'),
-    sa.UniqueConstraint('channelId'),
-    sa.UniqueConstraint('webhookId')
+    sa.UniqueConstraint('webhookId'),
+    sa.UniqueConstraint('webhookURL')
     )
     op.create_table('notification',
     sa.Column('notificationId', sa.String(length=64), nullable=False),
@@ -63,8 +63,8 @@ def upgrade():
     sa.Column('twitchId', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['webhookId'], ['webhook.webhookId'], ),
     sa.PrimaryKeyConstraint('notificationId'),
-    sa.UniqueConstraint('twitchId'),
-    sa.UniqueConstraint('webhookId')
+    sa.UniqueConstraint('notificationId'),
+    sa.UniqueConstraint('twitchId')
     )
     # ### end Alembic commands ###
 

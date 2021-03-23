@@ -13,8 +13,8 @@ from app.models import Channel, Guild, User, Webhook, Notification
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-bot = Discord_Async(loop=asyncio.new_event_loop(),db=db)
-bot.start()
+bot = Discord_Async(db=db)
+#bot.start()
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -59,22 +59,49 @@ def guilds():
     headers = {'Authorization': session['user']['token_type'] + ' ' + session['user']['access_token']}
     r = requests.get(discord_guilds_url, headers=headers)
     guilds = json.loads(r.text)
+    g = []
     for guild in guilds:
         bot.discordBot.addGuildToTable(guild['id'], guild['name'])
-    return render_template('guilds.html', guilds=guilds)
+        if bot.discordBot.isMember(int(guild['id'])):
+            g.append(guild)
+    return render_template('guilds.html', guilds=g)
 
 # Should only be called when user is logged in
 @app.route('/guilds/<id>')
+def guild_channels(id):
+    if 'user' not in session:
+        return 'You need to be logged in to see the guild channels', 400
+    
+    headers = {'Authorization': session['user']['token_type'] + ' ' + session['user']['access_token']}
+
+    asyncio.run(bot.discordBot.get_channels(guildId=int(id)))
+
+    channels = Channel.query.filter_by(guildId=int(id))
+    return render_template('channels.html', channels=channels)
+
+@app.route('/channels/<id>')
 def channels(id):
     if 'user' not in session:
         return 'You need to be logged in to see the guild channels', 400
     
     headers = {'Authorization': session['user']['token_type'] + ' ' + session['user']['access_token']}
 
-    asyncio.run(bot.discordBot.get_channels(guildId=id))
+    webhooks = asyncio.run_coroutine_threadsafe(bot.discordBot.get_webhooks(channelId=int(id)), bot.discordLoop).result()
 
-    channels = Channel.query.filter_by(guildId=id)
-    return render_template('channels.html', channels=channels)
+    for webhook in webhooks:
+        bot.discordBot.addWebhookToTable(webhook, int(id))
+
+    webhooks = Webhook.query.filter_by(channelId=int(id))
+    return render_template('webhooks.html', webhooks=webhooks)
+
+@app.route('/webhooks/<id>')
+def webhooks(id):
+    if 'user' not in session:
+        return 'You need to be logged in to see the channel webhooks', 400
+    
+    headers = {'Authorization': session['user']['token_type'] + ' ' + session['user']['access_token']}
+
+    return render_template('notifications.html')
 
 # Receives the Twitch Challenge and sends recieved data to discord webhook
 @app.route('/api/webhooks/callback', methods=['POST'])

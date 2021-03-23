@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+<!-- Should be a list of webhooks inside the specified channel-->
+{% block content %}
+<div>
+    <h1>List of webhooks inside of the channel</h1>
+</div>
+{% for webhook in webhooks %}
+<div>
+<p>{{ webhook.webhookId }}: <a href="/webhooks/{{ webhook.webhookId }}">{{ webhook.webhookURL }}</a></p>
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,7 +1,13 @@
 {% extends "base.html" %}
-<!-- Should list a list of guilds the user is in -->
+
+<!-- Should list a list of guilds the user and bot is in -->
 {% block content %}
+<div>
+    <h1>Guilds the bot is in and you are an admin</h1>
+</div>
 {% for guild in guilds %}
-<div><p>{{ guild.name }}: {{guild.id}}</p></div>
+<div>
+<p>{{ guild.name }}: <a href="/guilds/{{  guild.id  }}">{{  guild.id  }}</a></p>
+</div>
 {% endfor %}
 {% endblock %}

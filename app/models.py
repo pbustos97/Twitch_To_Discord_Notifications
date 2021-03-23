@@ -52,7 +52,7 @@ class Channel(db.Model):
 
     channelId = db.Column(db.Integer, primary_key=True, unique=True)
     channelName = db.Column(db.String(128))
-    guildId = db.Column(db.Integer, db.ForeignKey('guild.guildId'), unique=True)
+    guildId = db.Column(db.Integer, db.ForeignKey('guild.guildId'))
 
     # Webhook relationship
     webhooks = db.relationship('Webhook', backref='channel', lazy='dynamic')
@@ -61,7 +61,8 @@ class Webhook(db.Model):
     __tablename__ = 'webhook'
 
     webhookId = db.Column(db.Integer, primary_key=True, unique=True)
-    channelId = db.Column(db.Integer, db.ForeignKey('channel.channelId'), unique=True)
+    channelId = db.Column(db.Integer, db.ForeignKey('channel.channelId'))
+    webhookURL = db.Column(db.String(), unique=True)
 
     # Webhook notification relationship
     notifications = db.relationship('Notification', backref='webhook', lazy='dynamic')
@@ -69,8 +70,6 @@ class Webhook(db.Model):
 class Notification(db.Model):
     __tablename__ = 'notification'
 
-    notificationId = db.Column(db.String(64), primary_key=True)
-    webhookId = db.Column(db.Integer, db.ForeignKey('webhook.webhookId'), unique=True)
+    notificationId = db.Column(db.String(64), primary_key=True, unique=True)
+    webhookId = db.Column(db.Integer, db.ForeignKey('webhook.webhookId'))
     twitchId = db.Column(db.Integer, unique=True)
-
-
