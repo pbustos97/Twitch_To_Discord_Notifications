@@ -29,7 +29,7 @@ def Callback_Verify(request):
         return True
     return False
 
-# Called if user token expired or not in db
+# Called if user is not logged in
 def Discord_Login_Controller(request):
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     data = {'client_id': discord_id,
@@ -49,12 +49,23 @@ def Discord_Login_Controller(request):
     refresh_token = data['refresh_token']
     session['user'] = data
 
-    # Add user model to database
+    headers = {'Authorization': session['user']['token_type'] + ' ' + session['user']['access_token']}
+    r = requests.get('https://discord.com/api/users/@me')
+    user = json.loads(r.text)
+    username = user['username']
+    discriminator = user['discriminator']
+    discordId = user['id']
+    email = user['email']
+    avatarURL = 'https://cdn.discordapp.com/avatars/{}/{}.png'.format(discordId, user['avatar'])
 
-    # List guilds, link user and guilds to guildUsers table
-    # For each guild that user has, add guild model to database
+    userDict = {}
+    userDict['discordId'] = discordId
+    userDict['username'] = username
+    userDict['discriminator'] = discriminator
+    userDict['email'] = email
+    userDict['avatarURL'] = avatarURL
 
-    # return render_template('index.html', data=discord_data)
+    return userDict
 
 # Called when user requests to logout
 def Discord_Logout_Controller():

@@ -34,8 +34,10 @@ def login():
 # Sign in with Discord to login
 @app.route('/api/discord/redirect', methods=['POST','GET'])
 def discord_login():
-    Discord_Login_Controller(request)
+    user = Discord_Login_Controller(request)
     print(session['user'])
+    
+    bot.discordBot.addUserToTable(user)
     return redirect(url_for('index'))
 
 # Drops the session linked to a user that requests to logout
@@ -126,12 +128,23 @@ def callback():
                         username = request.json['event']['broadcaster_user_name']
                         link = 'https://twitch.tv/' + request.json['event']['broadcaster_user_login']
                         discord_data['content'] = '{username} has gone live! {link}'.format(username=username, link=link)
+                        notification = Notification.query.filter_by(notificationId=request.json['subscription']['id'])
                         r = requests.post(discord_webhook_url, json=discord_data)
+                        #webhook = Webhook.query.filter_by(webhookId=notification.webhookId)
+                        #r = requests.post(webhook.webhookURL, json=discord_data)
                         if not r.ok:
-                            return 'Failed to send webhook', 400
+                            return 'Failed to send webhook', 500
             return 'Ok', 200
         else:
             abort(400)
         return 'Ok', 200
+    else:
+        abort(400)
+
+# Deletes the webhook ID and linked notifications
+@app.route('/api/delete/<id>', methods=['DELETE'])
+def deleteWebhook(id):
+    if Webhook.query.filter_by(webhookId=id):
+        return 200
     else:
         abort(400)

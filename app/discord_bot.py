@@ -3,7 +3,7 @@ import asyncio
 from discord.ext import commands
 from flask_sqlalchemy import SQLAlchemy
 from app.secret.discord_id import discord_bot_token
-from app.models import Channel, Webhook, Guild
+from app.models import Channel, Webhook, Guild, User
 
 class discord_bot(discord.Client):
     def __init__(self, parent, db):
@@ -41,13 +41,17 @@ class discord_bot(discord.Client):
 
     # Adds channel to table with link to parent guild
     def addChannelToTable(self, channel):
-        if Channel.query.filter_by(channelId=channel.id).first() != None:
-            return True
+        c = Channel.query.filter_by(channelId=channel.id).first()
         try:
-            c = Channel(channelId=channel.id, channelName=channel.name, guildId=channel.guild.id)
-            self.db.session.add(c)
-            self.db.session.commit()
-            return True
+            if c != None:
+                c.channelName = channel.name
+                self.db.session.commit()
+                return True
+            else:
+                c = Channel(channelId=channel.id, channelName=channel.name, guildId=channel.guild.id)
+                self.db.session.add(c)
+                self.db.session.commit()
+                return True
         except Exception as e:
             print(e)
         return False
@@ -67,20 +71,44 @@ class discord_bot(discord.Client):
 
     # Adds guild to table
     def addGuildToTable(self, guildId, guildName):
-        if Guild.query.filter_by(guildId=guildId).first() != None:
-            return True
+        g = Guild.query.filter_by(guildId=guildId).first()
         try:
-            g = Guild(guildId=guildId, guildName=guildName)
-            self.db.session.add(g)
-            self.db.session.commit()
-            return True
+            if g != None:
+                g.guildName = guildName
+                self.db.session.commit()
+                return True
+            else:
+                g = Guild(guildId=guildId, guildName=guildName)
+                self.db.session.add(g)
+                self.db.session.commit()
+                return True
         except Exception as e:
             print(e)
         return False
 
+    # Adds user to table
+    def addUserToTable(self, user):
+        u = User.query.filter_by(discordId=user['id']).first()
+        try:
+            if u != None:
+                u.username = user['username']
+                u.discriminator = user['discriminator']
+                u.email = user['email']
+                self.db.session.commit()
+                return True
+            else:
+                u = User(discordId=user['id'], username=user['username'], discriminator=user['discriminator'], email=user['email'], avatarURL=user['avatarURL'])
+                self.db.session.add(u)
+                self.db.session.commit()
+                return True
+        except Exception as e:
+            print(e)
+        return False
+    
+    # Checks if bot is inside of the requested guild
     def isMember(self, guildId):
-        print(self.guilds)
-        print(self.get_guild(guildId))
+        #print(self.guilds)
+        #print(self.get_guild(guildId))
         if self.get_guild(guildId) in self.guilds:
             return True
         return False

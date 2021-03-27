@@ -9,7 +9,7 @@
     <body>
         <div>
             <a href="/">Home</a>
-            {% if user %}
+            {% if session['user'] %}
                 <a href="/guilds">Guilds</a>
                 <a href="/logout">Logout</a>
             {% else %}

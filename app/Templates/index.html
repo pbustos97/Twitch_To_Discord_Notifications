@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-{% if not user %}
+{% if not session['user'] %}
 <h1>Login with Discord</h1>
 <a href="https://discord.com/api/oauth2/authorize?client_id=801270142126260284&permissions=536937472&redirect_uri=https%3A%2F%2Fac4da1f259f8.ngrok.io%2Fapi%2Fdiscord%2Fredirect&response_type=code&scope=identify%20email%20guilds%20bot">Login</a>
 {% endif %}

@@ -22,8 +22,9 @@ class User(UserMixin, db.Model):
 
     discordId = db.Column(db.Integer, primary_key=True, unique=True)
     username = db.Column(db.String(), index=True)
-    email = db.Column(db.String(128), index=True, unique=True)
-    avatarURL = db.Column(db.String(256))
+    discriminator = db.Column(db.String())
+    email = db.Column(db.String(), index=True, unique=True)
+    avatarURL = db.Column(db.String())
 
     # Guild relationship
     guilds = db.relationship('Guild', secondary=guildUsers, backref='user')
@@ -38,7 +39,7 @@ class Guild(db.Model):
     __tablename__ = 'guild'
     
     guildId = db.Column(db.Integer, primary_key=True, unique=True)
-    guildName = db.Column(db.String(128))
+    guildName = db.Column(db.String())
 
     # Channel and user relationship
     users = db.relationship('User', secondary=guildUsers, backref='guild')
@@ -51,7 +52,7 @@ class Channel(db.Model):
     __tablename__ = 'channel'
 
     channelId = db.Column(db.Integer, primary_key=True, unique=True)
-    channelName = db.Column(db.String(128))
+    channelName = db.Column(db.String())
     guildId = db.Column(db.Integer, db.ForeignKey('guild.guildId'))
 
     # Webhook relationship
@@ -70,6 +71,6 @@ class Webhook(db.Model):
 class Notification(db.Model):
     __tablename__ = 'notification'
 
-    notificationId = db.Column(db.String(64), primary_key=True, unique=True)
+    notificationId = db.Column(db.String(), primary_key=True, unique=True)
     webhookId = db.Column(db.Integer, db.ForeignKey('webhook.webhookId'))
     twitchId = db.Column(db.Integer, unique=True)
