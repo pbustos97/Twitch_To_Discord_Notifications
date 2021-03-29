@@ -50,7 +50,7 @@ def Discord_Login_Controller(request):
     session['user'] = data
 
     headers = {'Authorization': session['user']['token_type'] + ' ' + session['user']['access_token']}
-    r = requests.get('https://discord.com/api/users/@me')
+    r = requests.get('https://discord.com/api/users/@me', headers=headers)
     user = json.loads(r.text)
     username = user['username']
     discriminator = user['discriminator']

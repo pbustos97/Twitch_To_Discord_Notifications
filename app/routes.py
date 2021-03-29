@@ -35,7 +35,6 @@ def login():
 @app.route('/api/discord/redirect', methods=['POST','GET'])
 def discord_login():
     user = Discord_Login_Controller(request)
-    print(session['user'])
     
     bot.discordBot.addUserToTable(user)
     return redirect(url_for('index'))

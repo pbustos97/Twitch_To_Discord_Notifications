@@ -88,7 +88,7 @@ class discord_bot(discord.Client):
 
     # Adds user to table
     def addUserToTable(self, user):
-        u = User.query.filter_by(discordId=user['id']).first()
+        u = User.query.filter_by(discordId=user['discordId']).first()
         try:
             if u != None:
                 u.username = user['username']
@@ -97,7 +97,7 @@ class discord_bot(discord.Client):
                 self.db.session.commit()
                 return True
             else:
-                u = User(discordId=user['id'], username=user['username'], discriminator=user['discriminator'], email=user['email'], avatarURL=user['avatarURL'])
+                u = User(discordId=user['discordId'], username=user['username'], discriminator=user['discriminator'], email=user['email'], avatarURL=user['avatarURL'])
                 self.db.session.add(u)
                 self.db.session.commit()
                 return True
