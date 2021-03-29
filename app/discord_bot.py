@@ -3,7 +3,7 @@ import asyncio
 from discord.ext import commands
 from flask_sqlalchemy import SQLAlchemy
 from app.secret.discord_id import discord_bot_token
-from app.models import Channel, Webhook, Guild, User
+from app.models import Channel, Webhook, Guild, User, GuildUserLink
 
 class discord_bot(discord.Client):
     def __init__(self, parent, db):
@@ -111,4 +111,32 @@ class discord_bot(discord.Client):
         #print(self.get_guild(guildId))
         if self.get_guild(guildId) in self.guilds:
             return True
+        return False
+
+    # Links guild and userID
+    def addGuildUserToTable(self, userId, guildId):
+        if self.get_guild(guildId) in self.get_user(userId).mutual_guilds:
+            # check if in GuildUserLink
+            row = GuildUserLink.query.filter_by(guildId=guildId, discordId=userId).first()
+            try:
+                if row != None:
+                    return True
+                g = GuildUserLink(guildId=guildId, discordId=userId)
+                self.db.session.add(g)
+                self.db.session.commit()
+                return True
+            except Exception as e:
+                print(e)
+            return False
+        else:
+            self.delGuildUserFromTable(userId, GuildId)
+    
+    def delGuildUserFromTable(self, userId, guildId):
+        row = GuildUserLink.query.filter_by(guildId=guildId, discordId=userId).first()
+        try:
+            if row != None:
+                row.delete()
+                return True
+        except Exception as e:
+            print(e)
         return False

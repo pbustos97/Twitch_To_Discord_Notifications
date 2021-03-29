@@ -12,10 +12,11 @@ import redis
 import rq
 from app import db
 
-guildUsers = db.Table('guildUsers',
-    db.Column('guildId', db.Integer, db.ForeignKey('guild.guildId')),
-    db.Column('userId', db.Integer, db.ForeignKey('user.discordId'))
-)
+class GuildUserLink(db.Model):
+    __tablename__ = 'guildUserLink'
+
+    guildId = db.Column('guildId', db.Integer, db.ForeignKey('guild.guildId'), primary_key=True)
+    discordId = db.Column('userId', db.Integer, db.ForeignKey('user.discordId'), primary_key=True)
 
 class User(UserMixin, db.Model):
     __tablename__ = 'user'

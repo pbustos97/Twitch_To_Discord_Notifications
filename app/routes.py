@@ -65,6 +65,10 @@ def guilds():
         bot.discordBot.addGuildToTable(guild['id'], guild['name'])
         if bot.discordBot.isMember(int(guild['id'])):
             g.append(guild)
+    # link guild and user
+    r = requests.get('https://discord.com/api/users/@me', headers=headers)
+    user = json_loads(r.text)
+    userId = user['id']
     return render_template('guilds.html', guilds=g)
 
 # Should only be called when user is logged in
