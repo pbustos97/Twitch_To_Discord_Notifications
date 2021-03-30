@@ -12,12 +12,6 @@ import redis
 import rq
 from app import db
 
-class GuildUserLink(db.Model):
-    __tablename__ = 'guildUserLink'
-
-    guildId = db.Column('guildId', db.Integer, db.ForeignKey('guild.guildId'), primary_key=True)
-    discordId = db.Column('userId', db.Integer, db.ForeignKey('user.discordId'), primary_key=True)
-
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
 
@@ -28,7 +22,7 @@ class User(UserMixin, db.Model):
     avatarURL = db.Column(db.String())
 
     # Guild relationship
-    guilds = db.relationship('Guild', secondary=guildUsers, backref='user')
+    guilds = db.relationship('Guild', secondary="guildUserLink")
 
     def __repr__(self):
         return "{}: {}".format(self.discordId, self.email)
@@ -43,11 +37,20 @@ class Guild(db.Model):
     guildName = db.Column(db.String())
 
     # Channel and user relationship
-    users = db.relationship('User', secondary=guildUsers, backref='guild')
+    users = db.relationship('User', secondary="guildUserLink")
     channels = db.relationship('Channel', backref='guild', lazy='dynamic')
 
     def linkUser(self, discordId):
         self.users.append(discordId)
+
+class GuildUserLink(db.Model):
+    __tablename__ = 'guildUserLink'
+
+    guildId = db.Column('guildId', db.Integer, db.ForeignKey('guild.guildId'), primary_key=True)
+    discordId = db.Column('userId', db.Integer, db.ForeignKey('user.discordId'), primary_key=True)
+
+    user = db.relationship(User, backref=db.backref("guildUserLink", cascade="all, delete-orphan"))
+    guild = db.relationship(Guild, backref=db.backref("guildUserLink", cascade="all, delete-orphan"))
 
 class Channel(db.Model):
     __tablename__ = 'channel'

@@ -7,7 +7,10 @@ from app.models import Channel, Webhook, Guild, User, GuildUserLink
 
 class discord_bot(discord.Client):
     def __init__(self, parent, db):
-        super().__init__()
+        intents = discord.Intents.default()
+        intents.presences = False
+        intents.members = True
+        super().__init__(intents=intents)
         self.parent = parent
         self.db = db
     
@@ -115,7 +118,7 @@ class discord_bot(discord.Client):
 
     # Links guild and userID
     def addGuildUserToTable(self, userId, guildId):
-        if self.get_guild(guildId) in self.get_user(userId).mutual_guilds:
+        if self.get_user(userId) == self.get_guild(guildId).get_member(userId):
             # check if in GuildUserLink
             row = GuildUserLink.query.filter_by(guildId=guildId, discordId=userId).first()
             try:

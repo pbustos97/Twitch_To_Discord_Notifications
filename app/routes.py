@@ -70,9 +70,8 @@ def guilds():
     user = json.loads(r.text)
     userId = user['id']
     for guild in g:
-        if bot.discordBot.isMemberAdmin(int(userId), int(g['id'])):
-            print('is admin')
-            #bot.discordBot.addGuildUserToTable(int(userId), int(g['id']))
+        if bot.discordBot.isMemberAdmin(int(userId), int(guild['id'])):
+            bot.discordBot.addGuildUserToTable(int(userId), int(guild['id']))
     return render_template('guilds.html', guilds=g)
 
 # Should only be called when user is logged in
