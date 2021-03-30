@@ -122,14 +122,15 @@ class discord_bot(discord.Client):
                 if row != None:
                     return True
                 g = GuildUserLink(guildId=guildId, discordId=userId)
-                self.db.session.add(g)
-                self.db.session.commit()
-                return True
+                if self.isMemberAdmin(userId, guildId):
+                    self.db.session.add(g)
+                    self.db.session.commit()
+                    return True
             except Exception as e:
                 print(e)
             return False
         else:
-            self.delGuildUserFromTable(userId, GuildId)
+            self.delGuildUserFromTable(userId, guildId)
     
     def delGuildUserFromTable(self, userId, guildId):
         row = GuildUserLink.query.filter_by(guildId=guildId, discordId=userId).first()
@@ -140,3 +141,13 @@ class discord_bot(discord.Client):
         except Exception as e:
             print(e)
         return False
+
+    def isMemberAdmin(self, userId, guildId):
+        guild = self.get_guild(guildId)
+        user = guild.get_member(userId)
+        if not user:
+            return False
+        permissions = user.guild_permissions
+        if (permissions.administrator != True) or (userId != guild.owner_id):
+            return False
+        return True

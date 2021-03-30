@@ -67,8 +67,12 @@ def guilds():
             g.append(guild)
     # link guild and user
     r = requests.get('https://discord.com/api/users/@me', headers=headers)
-    user = json_loads(r.text)
+    user = json.loads(r.text)
     userId = user['id']
+    for guild in g:
+        if bot.discordBot.isMemberAdmin(int(userId), int(g['id'])):
+            print('is admin')
+            #bot.discordBot.addGuildUserToTable(int(userId), int(g['id']))
     return render_template('guilds.html', guilds=g)
 
 # Should only be called when user is logged in
